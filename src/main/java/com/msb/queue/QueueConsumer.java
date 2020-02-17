@@ -1,4 +1,4 @@
-package com.msb;
+package com.msb.queue;
 
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -11,7 +11,7 @@ import javax.jms.*;
 * @author  Liang Jun
 * @date    2020年02月08日 23:15:28
 **/
-public class Consumer {
+public class QueueConsumer {
     final private static String url = "tcp://49.235.216.115:61616";
     public static void main(String[] args) throws Exception {
         //1.获取连接工厂
@@ -24,14 +24,14 @@ public class Consumer {
         //4.创建session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         //5.创建目的地
-        Destination destination = session.createQueue("myQueue");
+        Destination destination = session.createQueue("myQueue?consumer.exclusive=true");
         //6.创建消费者
-        MessageConsumer consumer = session.createConsumer(destination);
+        MessageConsumer consumer = session.createConsumer(destination, "age>5");
         //7.接收消息
         for (int i=1; i>0; i++) {
             TextMessage message = (TextMessage) consumer.receive();
             System.out.println(":" + message.getText());
-            if (message.getText().equals("bye bye")) break;
+            Thread.sleep(1000);
         }
         //8.关闭连接
         connection.close();

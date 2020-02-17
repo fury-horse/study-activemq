@@ -19,6 +19,14 @@ public class MQFactory {
 
     private MQFactory(){}
 
+    static {
+        if (factory == null) {
+            System.out.println("MQ连接工厂尚未初始化...");
+        } else {
+            System.out.println("MQ连接工厂：" + url);
+        }
+    }
+
     public static Connection getConnect() {
         try {
             Connection connection = factory.createConnection();
