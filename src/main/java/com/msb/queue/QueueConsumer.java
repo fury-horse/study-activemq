@@ -26,12 +26,17 @@ public class QueueConsumer {
         //5.创建目的地
         Destination destination = session.createQueue("myQueue?consumer.exclusive=true");
         //6.创建消费者
-        MessageConsumer consumer = session.createConsumer(destination, "age>5");
+        MessageConsumer consumer = session.createConsumer(destination);
         //7.接收消息
         for (int i=1; i>0; i++) {
             TextMessage message = (TextMessage) consumer.receive();
             System.out.println(":" + message.getText());
             Thread.sleep(1000);
+
+            Destination dest = message.getJMSReplyTo();
+            MessageProducer producer = session.createProducer(dest);
+            producer.send(session.createTextMessage("receive:" + i));
+            producer.close();
         }
         //8.关闭连接
         connection.close();

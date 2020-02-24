@@ -2,8 +2,10 @@ package com.msb.queue;
 
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.command.ActiveMQQueue;
 
 import javax.jms.*;
+import java.io.IOException;
 
 /**
 * @desc    
@@ -12,14 +14,14 @@ import javax.jms.*;
 * @date    2020年02月08日 23:01:08
 **/
 public class QueueProducer {
-    final private static String url = "tcp://49.235.216.115:61616";
-    public static void main(String[] args) throws JMSException, InterruptedException {
+    final private static String url = "nio://49.235.216.115:61617";
+    public static void main(String[] args) throws JMSException, InterruptedException, IOException {
         //1.获取连接工厂
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
                 ActiveMQConnectionFactory.DEFAULT_USER, ActiveMQConnectionFactory.DEFAULT_PASSWORD, url);
         //2.获取连接
         Connection connection = factory.createConnection();
-        connection.start();
+        connection.start(); //生产者可以不调用start
         //3.获取session
         Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
         //4.获取目的地
@@ -41,17 +43,16 @@ public class QueueProducer {
             //设置全部消息过期时间
             //producer.setTimeToLive(500);
             //设置消息属性（消费者可以做消息过滤）
-            message.setIntProperty("age", i);
+            //message.setIntProperty("age", i);
+            message.setJMSReplyTo(new ActiveMQQueue("replyQueue"));
 
             //7.生产者发消息
             producer.send(message);
             System.out.println("发送消息：" + i);
-            //Thread.sleep(1000);
         }
 
         //8.关闭连接
-        producer.close();
+        //connection.close();
         System.out.println("connect close.");
-        System.exit(0);
     }
 }

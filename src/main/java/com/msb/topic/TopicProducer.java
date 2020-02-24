@@ -2,6 +2,7 @@ package com.msb.topic;
 
 
 import com.msb.MQFactory;
+import org.apache.activemq.ScheduledMessage;
 
 import javax.jms.*;
 
@@ -26,6 +27,15 @@ public class TopicProducer {
         //5.创建消息
         MapMessage mapMessage = session.createMapMessage();
         mapMessage.setString("content", "hello, every one!");
+        //5.1设置消息延迟发送
+        mapMessage.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, 10 * 1000);
+        //5.2设置消息重复发送
+        mapMessage.setIntProperty(ScheduledMessage.AMQ_SCHEDULED_REPEAT, 9);
+        //5.3设置消息间隔发送
+        mapMessage.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_PERIOD, 2 * 1000);
+        //5.4设置消息定时发送
+        mapMessage.setStringProperty(ScheduledMessage.AMQ_SCHEDULED_CRON, "0 0 12 * * ?"); //每天中午12点触发
+
         //6.发送消息
         producer.send(mapMessage);
         //7.关闭连接
