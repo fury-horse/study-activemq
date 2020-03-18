@@ -11,8 +11,8 @@ import javax.jms.*;
 * @author  Liang Jun
 * @date    2020年02月08日 23:15:28
 **/
-public class QueueConsumer {
-    final private static String url = "tcp://49.235.216.115:61616";
+public class ClusterConsumer {
+    final private static String url = "failover:(nio://49.235.216.115:61617,nio://49.235.216.115:61618)?Randomize=true";
     public static void main(String[] args) throws Exception {
         //1.获取连接工厂
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
@@ -27,19 +27,22 @@ public class QueueConsumer {
         Destination destination = session.createQueue("myQueue?consumer.exclusive=true");
         //6.创建消费者
         MessageConsumer consumer = session.createConsumer(destination);
-        //7.接收消息
-        for (int i=1; i>0; i++) {
-            TextMessage message = (TextMessage) consumer.receive();
-            System.out.println(":" + message.getText());
-            Thread.sleep(1000);
 
-            Destination dest = message.getJMSReplyTo();
-            MessageProducer producer = session.createProducer(dest);
-            producer.send(session.createTextMessage("receive:" + i));
-            producer.close();
-        }
+        consumer.setMessageListener(new MessageListener() {
+            @Override
+            public void onMessage(Message msg) {
+                try {
+                    TextMessage message = (TextMessage) msg;
+                    System.out.println(":" + message.getText());
+                } catch (JMSException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         //8.关闭连接
         //connection.close();
         System.out.println("connect close.");
+        System.in.read();
     }
 }

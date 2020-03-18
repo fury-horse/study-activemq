@@ -2,7 +2,6 @@ package com.msb.queue;
 
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQQueue;
 
 import javax.jms.*;
 import java.io.IOException;
@@ -13,8 +12,8 @@ import java.io.IOException;
 * @author  Liang Jun
 * @date    2020年02月08日 23:01:08
 **/
-public class QueueProducer {
-    final private static String url = "tcp://49.235.216.115:61617";
+public class ClusterProducer {
+    final private static String url = "failover:(nio://49.235.216.115:61617,nio://49.235.216.115:61618)?Randomize=true";
     public static void main(String[] args) throws JMSException, InterruptedException, IOException {
         //1.获取连接工厂
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
@@ -31,21 +30,6 @@ public class QueueProducer {
         for (int i=1; i<=10; i++) {
             //6.创建消息
             TextMessage message = session.createTextMessage("hello, active mq " + i);
-
-            //设置单条消息优先级（0-9越大越先，默认4）
-            //message.setJMSPriority(9);
-            //设置全部消息优先级（0-9越大越先，默认4）
-            //producer.setPriority(9);
-            //设置单条消息非持久化（activemq-client:5.15.11未实现）
-            //message.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            //设置全部消息非持久化
-            //producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            //设置全部消息过期时间
-            //producer.setTimeToLive(500);
-            //设置消息属性（消费者可以做消息过滤）
-            //message.setIntProperty("age", i);
-            message.setJMSReplyTo(new ActiveMQQueue("replyQueue"));
-
             //7.生产者发消息
             producer.send(message);
             System.out.println("发送消息：" + i);
@@ -54,5 +38,6 @@ public class QueueProducer {
         //8.关闭连接
         //connection.close();
         System.out.println("connect close.");
+        System.in.read();
     }
 }
